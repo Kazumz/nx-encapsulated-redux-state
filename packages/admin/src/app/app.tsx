@@ -1,0 +1,70 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import styles from './app.module.scss';
+import {
+    Route,
+    Routes,
+    Link
+} from 'react-router-dom';
+import {
+    appActions,
+    useGetEmittedState,
+    useGetIrrelevantState
+} from '../store/reducers/appSlice';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import {
+    subscribe,
+    UserPane
+} from '@redux-adapter-pattern/user-pane';
+
+export function App() {
+    const dispatch = useDispatch();
+    const irrelevantState = useGetIrrelevantState();
+    const emittedState = useGetEmittedState();
+
+    useEffect(() => {
+        const unsubscribe = subscribe(state => {
+            dispatch(appActions.setEmittedState({ emittedState: state }))
+        })
+
+        return function dispose() {
+            unsubscribe();
+        }
+    }, [])
+
+    return (
+        <>
+            Irrelevant State Value {irrelevantState.toString()}
+
+            <UserPane/>
+            
+            Emitted State {JSON.stringify(emittedState)}
+
+            <div role="navigation">
+                <ul>
+                    <li><Link to="/">Home</Link></li>
+                    <li><Link to="/page-2">Page 2</Link></li>
+                </ul>
+            </div>
+
+            <Routes>
+                <Route
+                    path="/"
+                    element={
+                        <div>This is the generated root route. <Link to="/page-2">Click here for page 2.</Link></div>
+                    }
+                />
+                <Route
+                    path="/page-2"
+                    element={
+                        <div><Link to="/">Click here to go back to root page.</Link></div>
+                    }
+                />
+            </Routes>
+            {/* END: routes */}
+        </>);
+
+}
+
+
+export default App;
